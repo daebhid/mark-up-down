@@ -216,7 +216,15 @@ and a real document — the File System Access API can't be driven headlessly.
 
 ## Repository
 
-`https://github.com/daebhid/mark-up-down` — **private**, branch `main`.
+`https://github.com/daebhid/mark-up-down` — **public**, branch `main`.
+Live at **https://daebhid.github.io/mark-up-down/**, Pages serving `main` at
+root, all six assets verified including the manifest's
+`application/manifest+json` content type, which Chrome needs to offer the
+install.
+
+Made public at David's instruction so the app could be installed — GitHub Pages
+won't serve a private repo on a free plan. He was asked and chose public over a
+private repo with a local launchd server.
 
 Two commits. `.gitignore` covers `.DS_Store` and `.claude/settings.local.json`
 (note that `byline` has `.DS_Store` committed to it; this repo doesn't).
@@ -247,5 +255,25 @@ All build steps are done and the app is finished to By Line's standard.
    private repositories on a free plan, so the repo has to go public for the
    By Line arrangement to work. David's call — it's private at his request.
 3. Tip jar still points at `ko-fi.com/byline`.
-4. `byline` vs `by-line` — both exist on GitHub; `byline` is the one the README
-   links to as live. Which is canonical still unconfirmed.
+## Resolved: byline vs by-line
+
+**`by-line` is the canonical repo.** It has the Pages site, live at
+`https://daebhid.github.io/by-line/`. `byline` has **no Pages site at all** —
+the **Use it:** link in its own README points at
+`https://daebhid.github.io/byline/`, which returns 404.
+
+Worth fixing in that repo, or archiving it. mark-up-down's README now links to
+`by-line`.
+
+## Correction David made
+
+Asked why the download arrangement didn't match By Line's. The install mechanism
+did match line for line — same button, same fallback line, same
+`beforeinstallprompt` handling, same manifest and service worker. What didn't
+match was the README, which in By Line leads with a **Use it:** link to the live
+URL. mark-up-down had no link, so the app was live with nothing pointing at it.
+Added.
+
+The other half: By Line had already settled the hosting question — public repo,
+GitHub Pages — so that arrangement should have been matched rather than put to
+David as a choice.
