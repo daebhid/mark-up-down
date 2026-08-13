@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mark up down</title>
+<meta name="theme-color" content="#f6eddf">
+<style>
+  /* Default theme, shared with By Line: the theme code Charter;30;#f6eddf;#9b5c22.
+     --muted and --accent are what the appearance system derives from that pair,
+     precomputed here so the first paint matches. */
+  :root {
+    --bg: #f6eddf;
+    --fg: #9b5c22;
+    --muted: #c49d77;
+    --accent: #9b2224;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font, Charter, Georgia, 'Times New Roman', serif);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* ---- start screen ---- */
+  #start {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+    padding: 2rem;
+  }
+  #start h1 {
+    font-size: 1.6rem;
+    font-weight: normal;
+    letter-spacing: 0.02em;
+  }
+  .wordmark .ud {
+    display: inline-block;
+    margin-left: 0.15em;
+    color: var(--accent);
+    font-size: 0.62em;
+    line-height: 0.82;
+    text-align: left;
+    vertical-align: 0.06em;
+  }
+  .wordmark .ud span { display: block; }
+  #start .sub {
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  #start .sub p + p { margin-top: 0.8em; }
+  #start button {
+    font-family: inherit;
+    font-size: 1.05rem;
+    padding: 0.7rem 1.6rem;
+    background: none;
+    color: var(--fg);
+    border: 1px solid var(--muted);
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  #start button:hover { border-color: var(--accent); color: var(--accent); }
+  #start .error { color: var(--accent); font-size: 0.9rem; max-width: 30rem; line-height: 1.4; }
+
+  /* ---- reading screen ---- */
+  #reader {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+  #reader.active { display: block; }
+
+  #status {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.6rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+    user-select: none;
+  }
+  #status span:empty { display: none; }
+  #status span + span::before { content: ' · '; }
+  #tipjar {
+    position: absolute;
+    top: 1.2rem;
+    left: 1.6rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-decoration: none;
+    opacity: 0.65;
+    user-select: none;
+  }
+  #tipjar:hover { opacity: 1; color: var(--accent); }
+  #brand {
+    position: absolute;
+    top: 1.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.1rem;
+    color: var(--fg);
+    user-select: none;
+  }
+  #filename {
+    position: absolute;
+    bottom: 1.2rem;
+    left: 1.6rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    user-select: none;
+  }
+  #hintbar {
+    position: absolute;
+    bottom: 1.2rem;
+    right: 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    user-select: none;
+  }
+  #hintbar button {
+    width: 1.6rem;
+    height: 1.6rem;
+    border: 1px solid var(--muted);
+    border-radius: 50%;
+    background: none;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.9rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.65;
+  }
+  #markbtn { font-size: 0.6rem; }
+  #hintbar button:hover, #hintbar button.open, #markbtn.on {
+    opacity: 1;
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .panel {
+    display: none;
+    position: absolute;
+    bottom: 3.4rem;
+    right: 1.6rem;
+    max-width: 22rem;
+    padding: 1rem 1.2rem;
+    border: 1px solid var(--muted);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.7;
+  }
+  .panel.open { display: block; }
+  #helppanel kbd {
+    font-family: inherit;
+    font-style: italic;
+    color: var(--fg);
+  }
+  #helppanel p + p { margin-top: 0.7em; }
+  #readpanel, #setpanel { min-width: 19rem; }
+  .setrow {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+  .setrow + .setrow { margin-top: 0.7rem; }
+  .panel label { width: 5rem; flex-shrink: 0; }
+  .panel select,
+  .panel input:not([type="color"], [type="range"]) {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: 1px solid var(--muted);
+    border-radius: 4px;
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.5rem;
+  }
+  #set-jumpn { max-width: 5rem; }
+  #set-jumpn[hidden] { display: none; }
+  #set-code.invalid { border-color: var(--accent); color: var(--accent); }
+  #set-copy, #set-reset {
+    background: none;
+    border: 1px solid var(--muted);
+    border-radius: 4px;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
+    cursor: pointer;
+  }
+  #set-copy:hover, #set-reset:hover { border-color: var(--accent); color: var(--accent); }
+  #set-reset {
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    font-size: 0.85rem;
+  }
+  #set-size { flex: 1; accent-color: var(--accent); }
+  #set-size-val {
+    width: 3rem;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .panel input[type="color"] {
+    width: 2.4rem;
+    height: 1.7rem;
+    padding: 0;
+    border: 1px solid var(--muted);
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+  }
+
+  /* ---- the stage ---- */
+  #stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5.5rem 8vw;
+  }
+  #unit {
+    width: 100%;
+    max-width: 42rem;
+    font-size: var(--fsize, 30px);
+    line-height: 1.6;
+    text-align: center;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    transition: opacity 0.12s ease;
+  }
+  #unit.turning { opacity: 0; }
+  #unit.heading {
+    color: var(--accent);
+    letter-spacing: 0.06em;
+  }
+  #unit.break {
+    color: var(--muted);
+    letter-spacing: 0.9em;
+    text-indent: 0.9em;
+  }
+
+  /* ---- notes ---- */
+  #notebox {
+    display: none;
+    width: 100%;
+    max-width: 42rem;
+    margin-top: 2rem;
+  }
+  #notebox.open { display: block; }
+  #noteanchor {
+    display: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    text-align: center;
+    margin-bottom: 0.7rem;
+  }
+  #noteanchor.show { display: block; }
+  #notetext {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--muted);
+    border-radius: 6px;
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    padding: 0.7rem 0.9rem;
+    resize: none;
+    outline: none;
+    overflow: hidden;
+  }
+  #notetext:focus { border-color: var(--accent); }
+  #notefoot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+  #notefoot kbd { font-family: inherit; font-style: italic; }
+  #notefile {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--muted);
+    font-family: inherit;
+    font-size: 0.78rem;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  #notefile:hover { color: var(--accent); }
+  #noteflash {
+    position: absolute;
+    bottom: 1.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--muted);
+    font-size: 0.85rem;
+    opacity: 0;
+    pointer-events: none;
+    user-select: none;
+  }
+  #noteflash.show { animation: noteflash 1.4s ease-out; }
+  @keyframes noteflash {
+    0% { opacity: 0; }
+    20% { opacity: 0.85; }
+    100% { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="start">
+  <h1 class="wordmark">mark<span class="ud"><span>&uarr;</span><span>&darr;</span></span></h1>
+  <div class="sub">
+    <p>Open a markdown file and read it one sentence at a time.</p>
+    <p>The arrow keys move you through it. Left and right step a sentence, up and down jump further.</p>
+    <p>Nothing is uploaded and your document is opened read-only, so the app can never write to it.</p>
+  </div>
+  <button id="btn-continue" style="display:none"></button>
+  <button id="btn-open">Open a document&hellip;</button>
+  <p class="error" id="starterr"></p>
+</div>
+
+<div id="reader">
+  <a id="tipjar" href="https://ko-fi.com/byline" target="_blank" rel="noopener noreferrer">Tip Me</a>
+  <div id="status">
+    <span id="st-head"></span><span id="st-page"></span><span id="st-words"></span>
+  </div>
+  <div id="brand" class="wordmark" aria-hidden="true">mark<span class="ud"><span>&uarr;</span><span>&darr;</span></span></div>
+  <div id="stage">
+    <div id="unit"></div>
+    <div id="notebox">
+      <div id="noteanchor"></div>
+      <textarea id="notetext" rows="2" spellcheck="true"
+        placeholder="What needs changing?"></textarea>
+      <div id="notefoot">
+        <span><kbd>Cmd+Enter</kbd> saves &middot; <kbd>Esc</kbd> closes</span>
+        <button id="notefile"></button>
+      </div>
+    </div>
+  </div>
+  <div id="noteflash"></div>
+  <div id="filename"></div>
+  <div id="hintbar">
+    <button id="notebtn" title="Note">&#9998;</button>
+    <button id="markbtn" title="Bookmark">&#9679;</button>
+    <button id="readbtn" title="Reading">&para;</button>
+    <button id="setbtn" title="Appearance">Aa</button>
+    <button id="helpbtn" title="Keys">?</button>
+  </div>
+  <div id="readpanel" class="panel">
+    <div class="setrow">
+      <label for="set-view">Viewport</label>
+      <select id="set-view">
+        <option value="word">Word</option>
+        <option value="sentence">Sentence</option>
+        <option value="paragraph">Paragraph</option>
+      </select>
+    </div>
+    <div class="setrow">
+      <label for="set-jump">Jump</label>
+      <select id="set-jump">
+        <option value="paragraph">Paragraph</option>
+        <option value="words">Words</option>
+      </select>
+      <input id="set-jumpn" type="number" min="10" max="5000" step="10" hidden>
+    </div>
+  </div>
+  <div id="setpanel" class="panel">
+    <div class="setrow">
+      <label for="set-font">Font</label>
+      <input id="set-font" list="fontlist" placeholder="Charter" spellcheck="false">
+    </div>
+    <datalist id="fontlist">
+      <option value="Georgia"></option>
+      <option value="Palatino"></option>
+      <option value="Baskerville"></option>
+      <option value="Hoefler Text"></option>
+      <option value="Garamond"></option>
+      <option value="Times New Roman"></option>
+      <option value="Charter"></option>
+      <option value="American Typewriter"></option>
+      <option value="Courier New"></option>
+      <option value="Menlo"></option>
+      <option value="Helvetica Neue"></option>
+      <option value="Avenir Next"></option>
+      <option value="Futura"></option>
+      <option value="Optima"></option>
+    </datalist>
+    <div class="setrow">
+      <label for="set-size">Size</label>
+      <input id="set-size" type="range" min="14" max="48" step="1">
+      <span id="set-size-val"></span>
+    </div>
+    <div class="setrow">
+      <label for="set-bg">Background</label>
+      <input id="set-bg" type="color">
+    </div>
+    <div class="setrow">
+      <label for="set-fg">Text</label>
+      <input id="set-fg" type="color">
+    </div>
+    <div class="setrow">
+      <label for="set-code">Theme code</label>
+      <input id="set-code" spellcheck="false" placeholder="default">
+      <button id="set-copy" title="Copy theme code">copy</button>
+    </div>
+    <button id="set-reset">Reset to defaults</button>
+  </div>
+  <div id="helppanel" class="panel">
+    <p><kbd>&rarr;</kbd> and <kbd>&larr;</kbd> step forward and back one viewport at a time.</p>
+    <p><kbd>&darr;</kbd> and <kbd>&uarr;</kbd> jump, by paragraph or by a set number of words.</p>
+    <p>The bookmark keeps your place. Switch it off and the document always opens at the top.</p>
+    <p>The pencil, or <kbd>Enter</kbd>, opens a note on the sentence you're reading. Notes append to a markdown file of your choosing, in the order you write them.</p>
+  </div>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+
+  const WORDS_PER_PAGE = 250; // standard manuscript page
+  let handle = null;
+  let sentences = [];   // the canonical spine; viewports are derived from it
+  let units = [];       // what the arrows actually step through
+  let idx = 0;
+  let totalWords = 0, totalPages = 1;
+
+  const countWords = t => { t = t.trim(); return t ? t.split(/\s+/).length : 0; };
+  const commas = n => n.toLocaleString('en-GB');
+
+  // ---------- settings ----------
+  const SET_KEY = 'mud-settings', MARK_KEY = 'mud-bookmarks';
+  const defaults = { viewport: 'sentence', jumpMode: 'paragraph', jumpWords: 250, bookmark: true };
+  let settings = { ...defaults };
+  try { settings = { ...defaults, ...JSON.parse(localStorage.getItem(SET_KEY)) }; } catch {}
+  const saveSettings = () => localStorage.setItem(SET_KEY, JSON.stringify(settings));
+
+  const readMarks = () => { try { return JSON.parse(localStorage.getItem(MARK_KEY)) || {}; } catch { return {}; } };
+  const saveMark = () => {
+    if (!settings.bookmark || !handle) return;
+    const marks = readMarks();
+    marks[handle.name] = units[idx] ? units[idx].sentence : 0;
+    localStorage.setItem(MARK_KEY, JSON.stringify(marks));
+  };
+
+  // ---------- file handle persistence (IndexedDB) ----------
+  const idb = () => new Promise((res, rej) => {
+    const r = indexedDB.open('markupdown', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+  const put = async (key, value) => {
+    const db = await idb();
+    await new Promise((res, rej) => {
+      const tx = db.transaction('kv', 'readwrite');
+      tx.objectStore('kv').put(value, key);
+      tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+    });
+  };
+  const get = async key => {
+    const db = await idb();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('kv', 'readonly');
+      const rq = tx.objectStore('kv').get(key);
+      rq.onsuccess = () => res(rq.result || null);
+      rq.onerror = () => rej(rq.error);
+    });
+  };
+
+  // ---------- markdown ----------
+  // Only what a manuscript carries: headings, paragraphs, blockquotes, list
+  // items and scene breaks. Inline emphasis is stripped to leave clean prose.
+  // Backslash-escaped punctuation is parked out of reach first, so an escaped
+  // \*star\* isn't read as emphasis, then put back once the markers are gone.
+  const ESC = '\u0001';
+  const stripInline = s => s
+    .replace(/\\([\\`*_{}\[\]()#+\-.!~>])/g, (m, c) => ESC + c.charCodeAt(0) + ESC)
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')          // images to their alt text
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')           // links to their text
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\*\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*\*/g, '$1')
+    .replace(/\*\*(?=\S)([\s\S]+?)(?<=\S)\*\*/g, '$1')
+    .replace(/\*(?=\S)([\s\S]+?)(?<=\S)\*/g, '$1')
+    // Underscores only outside a word, so snake_case survives intact.
+    .replace(/(?<!\w)(___|__|_)(?=\S)([\s\S]+?)(?<=\S)\1(?!\w)/g, '$2')
+    .replace(/~~(?=\S)([\s\S]+?)(?<=\S)~~/g, '$1')
+    .replace(new RegExp(ESC + '(\\d+)' + ESC, 'g'), (m, c) => String.fromCharCode(c))
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const RE_HEADING = /^ {0,3}(#{1,6})\s+(.*?)\s*#*\s*$/;
+  const RE_BREAK = /^ {0,3}([-*_])\s*(?:\1\s*){2,}$/;
+  const RE_ITEM = /^ {0,3}(?:[-*+]|\d{1,9}[.)])\s+/;
+  const RE_FENCE = /^ {0,3}(```|~~~)/;
+
+  function parseBlocks(text) {
+    const lines = text.replace(/\r\n?/g, '\n').replace(/<!--[\s\S]*?-->/g, '').split('\n');
+    const blocks = [];
+    let buf = [];
+
+    const flush = () => {
+      if (!buf.length) return;
+      const t = stripInline(buf.join(' '));
+      if (t) blocks.push({ kind: 'text', text: t });
+      buf = [];
+    };
+
+    let i = 0;
+    if (lines[0] !== undefined && /^---\s*$/.test(lines[0])) {
+      // YAML front matter, which conversion tools leave at the top.
+      let j = 1;
+      while (j < lines.length && !/^(---|\.\.\.)\s*$/.test(lines[j])) j++;
+      if (j < lines.length) i = j + 1;
+    }
+
+    for (; i < lines.length; i++) {
+      const line = lines[i];
+
+      const fence = line.match(RE_FENCE);
+      if (fence) {
+        flush();
+        const body = [];
+        for (i++; i < lines.length && !lines[i].startsWith(fence[1]); i++) body.push(lines[i]);
+        const t = body.join('\n').trim();
+        // Held whole: sentence-splitting code would only produce nonsense.
+        if (t) blocks.push({ kind: 'text', text: t, atomic: true });
+        continue;
+      }
+
+      if (!line.trim()) { flush(); continue; }
+
+      const heading = line.match(RE_HEADING);
+      if (heading) {
+        flush();
+        const t = stripInline(heading[2]);
+        if (t) blocks.push({ kind: 'heading', level: heading[1].length, text: t });
+        continue;
+      }
+
+      // A run of = or - directly under text is a setext heading, not a break.
+      if (buf.length && /^ {0,3}=+\s*$/.test(line)) {
+        const t = stripInline(buf.join(' ')); buf = [];
+        if (t) blocks.push({ kind: 'heading', level: 1, text: t });
+        continue;
+      }
+      if (buf.length && /^ {0,3}-+\s*$/.test(line)) {
+        const t = stripInline(buf.join(' ')); buf = [];
+        if (t) blocks.push({ kind: 'heading', level: 2, text: t });
+        continue;
+      }
+
+      if (RE_BREAK.test(line)) { flush(); blocks.push({ kind: 'break' }); continue; }
+
+      let content = line.replace(/^ {0,3}>\s?/, '');
+      if (RE_ITEM.test(content)) { flush(); content = content.replace(RE_ITEM, ''); }
+      buf.push(content);
+    }
+    flush();
+    return blocks;
+  }
+
+  // ---------- sentences ----------
+  // Ported from By Line, where the same rules decide when a sentence is over.
+  // Marks that don't end one: a period between digits (3.5), after a lone
+  // initial (J. K.), after a title (Mr. Dr.), and ! or ? inside an open
+  // double quote ("Run!" she shouted).
+  const TERM = /[.!?]/, CLOSER = /['"”’)\]]/;
+  const TITLES = new Set([
+    'Mr', 'Mrs', 'Ms', 'Mx', 'Dr', 'Prof', 'Rev', 'Fr', 'Sr', 'Br', 'St',
+    'Capt', 'Sgt', 'Lt', 'Col', 'Gen', 'Maj', 'Cpl', 'Pvt', 'Adm', 'Cmdr',
+    'Hon', 'Messrs', 'Mmes', 'Esq', 'Gov', 'Pres', 'Sen', 'Rep', 'Amb',
+    'Supt', 'Insp', 'Det',
+  ]);
+
+  function inOpenQuote(t, i) {
+    let straight = 0, curly = 0;
+    for (let j = 0; j < i; j++) {
+      if (t[j] === '"') straight ^= 1;
+      else if (t[j] === '“') curly++;
+      else if (t[j] === '”') curly = Math.max(0, curly - 1);
+    }
+    return straight === 1 || curly > 0;
+  }
+
+  function isFinalAt(t, i) {
+    if (t[i] !== '.') return !inOpenQuote(t, i);
+    if (/\d/.test(t[i - 1] || '') && /\d/.test(t[i + 1] || '')) return false;
+    if (/[A-Z]/.test(t[i - 1] || '') && !/[A-Za-z]/.test(t[i - 2] || '')) return false;
+    const word = t.slice(0, i).match(/[A-Za-z]+$/);
+    if (word && TITLES.has(word[0])) return false;
+    return true;
+  }
+
+  function splitSentences(text) {
+    const out = [];
+    let start = 0;
+    for (let i = 0; i < text.length; i++) {
+      if (!TERM.test(text[i]) || !isFinalAt(text, i)) continue;
+      let j = i;
+      while (j + 1 < text.length && TERM.test(text[j + 1])) j++;      // ?! and ...
+      while (j + 1 < text.length && CLOSER.test(text[j + 1])) j++;    // the closing quote belongs to it
+      const s = text.slice(start, j + 1).trim();
+      if (s) out.push(s);
+      start = j + 1;
+      i = j;
+    }
+    const tail = text.slice(start).trim();
+    if (tail) out.push(tail);
+    return out;
+  }
+
+  // The spine: every sentence in document order, each knowing the heading it
+  // sits under, the block it came from, and where it falls in the word count.
+  // Headings and scene breaks are entries too, and count no words.
+  function buildSpine(blocks) {
+    const spine = [];
+    let heading = '', words = 0;
+    blocks.forEach((b, block) => {
+      if (b.kind === 'heading') {
+        heading = b.text;
+        spine.push({ kind: 'heading', text: b.text, heading, block, wordStart: words, words: 0 });
+        return;
+      }
+      if (b.kind === 'break') {
+        spine.push({ kind: 'break', text: '* * *', heading, block, wordStart: words, words: 0 });
+        return;
+      }
+      for (const text of (b.atomic ? [b.text] : splitSentences(b.text))) {
+        const n = countWords(text);
+        spine.push({ kind: 'text', text, heading, block, wordStart: words, words: n });
+        words += n;
+      }
+    });
+    totalWords = words;
+    totalPages = Math.max(1, Math.ceil(words / WORDS_PER_PAGE));
+    return spine;
+  }
+
+  // ---------- viewports ----------
+  // A unit is what the screen shows and what the arrows step through. Every
+  // unit points back at the sentence it belongs to, so a note taken in word
+  // or paragraph view still anchors to a whole sentence.
+  function buildUnits(viewport) {
+    const out = [];
+    sentences.forEach((s, sentence) => {
+      const base = { sentence, kind: s.kind, heading: s.heading, block: s.block };
+      if (s.kind !== 'text' || viewport === 'sentence') {
+        out.push({ ...base, text: s.text, wordStart: s.wordStart, words: s.words });
+        return;
+      }
+      if (viewport === 'word') {
+        let w = s.wordStart;
+        for (const word of s.text.split(/\s+/)) {
+          out.push({ ...base, text: word, wordStart: w, words: 1 });
+          w++;
+        }
+        return;
+      }
+      // paragraph: fold this sentence into the unit its block already opened
+      const last = out[out.length - 1];
+      if (last && last.kind === 'text' && last.block === s.block) {
+        last.text += ' ' + s.text;
+        last.words += s.words;
+      } else {
+        out.push({ ...base, text: s.text, wordStart: s.wordStart, words: s.words });
+      }
+    });
+    return out;
+  }
+
+  // Rebuild the viewport while staying where the reader was standing.
+  function setViewport(viewport, keepSentence) {
+    closeNote();
+    const target = keepSentence !== undefined ? keepSentence
+                 : units[idx] ? units[idx].sentence : 0;
+    units = buildUnits(viewport);
+    const found = units.findIndex(u => u.sentence >= target);
+    idx = found === -1 ? Math.max(0, units.length - 1) : found;
+    render();
+  }
+
+  // ---------- rendering ----------
+  const unitEl = $('unit'), stage = $('stage');
+
+  // A long paragraph won't fit at the reading size, so the type shrinks until
+  // it does. The floor stops it shrinking past legibility; past that it scrolls.
+  function fitText() {
+    const base = parseFloat(getComputedStyle(document.documentElement)
+      .getPropertyValue('--fsize')) || 30;
+    const box = noteBox.classList.contains('open')
+      ? noteBox.offsetHeight + parseFloat(getComputedStyle(noteBox).marginTop) : 0;
+    const room = stage.clientHeight - parseFloat(getComputedStyle(stage).paddingTop) * 2 - box;
+    let size = base;
+    unitEl.style.fontSize = size + 'px';
+    while (unitEl.offsetHeight > room && size > base * 0.5) {
+      size -= 1;
+      unitEl.style.fontSize = size + 'px';
+    }
+  }
+
+  function render() {
+    const u = units[idx];
+    if (!u) return;
+    unitEl.className = u.kind === 'text' ? '' : u.kind;
+    unitEl.textContent = u.text;
+    fitText();
+    const read = u.wordStart + u.words;
+    $('st-head').textContent = u.heading || handle.name.replace(/\.[^.]+$/, '');
+    $('st-page').textContent = 'page ' + Math.max(1, Math.ceil(read / WORDS_PER_PAGE)) +
+                              ' of ' + commas(totalPages);
+    $('st-words').textContent = commas(read) + (read === 1 ? ' word' : ' words');
+    saveMark();
+  }
+
+  // ---------- navigation ----------
+  function goto(next) {
+    const clamped = Math.max(0, Math.min(units.length - 1, next));
+    if (clamped === idx) return;
+    idx = clamped;
+    render();
+  }
+
+  function jump(dir) {
+    const u = units[idx];
+    if (settings.jumpMode === 'words') {
+      const target = u.wordStart + dir * settings.jumpWords;
+      goto(dir > 0
+        ? (i => i === -1 ? units.length - 1 : i)(units.findIndex(v => v.wordStart >= target))
+        : units.reduce((best, v, i) => v.wordStart <= target ? i : best, 0));
+      return;
+    }
+    if (dir > 0) {
+      const i = units.findIndex(v => v.block > u.block);
+      goto(i === -1 ? units.length - 1 : i);
+    } else {
+      // Back to the top of this block first; from the top, to the one before.
+      const top = units.findIndex(v => v.block === u.block);
+      if (top !== idx) { goto(top); return; }
+      const prev = units[top - 1];
+      goto(prev ? units.findIndex(v => v.block === prev.block) : 0);
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (!$('reader').classList.contains('active')) return;
+    if (e.target.matches('input, select, textarea')) return;
+    if (e.key === 'Escape') { closePanels(); closeNote(); return; }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      noteOpen() ? closeNote() : openNote();
+      return;
+    }
+    const step = { ArrowRight: () => goto(idx + 1), ArrowLeft: () => goto(idx - 1),
+                   ArrowDown: () => jump(1), ArrowUp: () => jump(-1) }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    if (noteOpen()) return; // the note is modal: finish it before moving on
+    step();
+  });
+
+  window.addEventListener('resize', () => { if (units.length) fitText(); });
+
+  // ---------- notes ----------
+  // A note anchors to a whole sentence, whatever the viewport is showing, and
+  // is appended to a markdown file in the order it was written. Nothing is ever
+  // rewritten, so a failed write costs one note rather than the whole pass.
+  let notes = null;           // the notes file, chosen the first time one is saved
+  const drafts = new Map();   // unsaved notes, held per sentence for the session
+  const noteBox = $('notebox'), noteText = $('notetext');
+  const noteOpen = () => noteBox.classList.contains('open');
+
+  const anchorSentence = () => {
+    const u = units[idx];
+    return u && u.kind === 'text' ? sentences[u.sentence] : null;
+  };
+
+  function locator(s) {
+    const word = s.wordStart + 1; // the sentence's first word, counting from one
+    return (s.heading ? s.heading + ' · ' : '') +
+           'p.' + Math.max(1, Math.ceil(word / WORDS_PER_PAGE)) + ' · w.' + word;
+  }
+
+  const flashNote = msg => {
+    const el = $('noteflash');
+    el.textContent = msg;
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.classList.add('show');
+  };
+
+  function growNote() {
+    noteText.style.height = 'auto';
+    noteText.style.height = noteText.scrollHeight + 'px';
+  }
+
+  function openNote() {
+    const s = anchorSentence();
+    if (!s) { flashNote('Notes attach to sentences, not headings.'); return; }
+    noteBox.classList.add('open');
+    $('notebtn').classList.add('open');
+    // In word and paragraph view what's on screen isn't the sentence being
+    // noted, so the sentence is spelled out above the box.
+    const anchor = $('noteanchor');
+    anchor.classList.toggle('show', settings.viewport !== 'sentence');
+    anchor.textContent = s.text;
+    noteText.value = drafts.get(units[idx].sentence) || '';
+    syncNoteFile();
+    growNote();
+    fitText();
+    noteText.focus();
+  }
+
+  function closeNote() {
+    if (!noteOpen()) return;
+    const u = units[idx];
+    if (u) {
+      if (noteText.value.trim()) drafts.set(u.sentence, noteText.value);
+      else drafts.delete(u.sentence);
+    }
+    noteBox.classList.remove('open');
+    $('notebtn').classList.remove('open');
+    fitText();
+  }
+
+  const syncNoteFile = () => {
+    $('notefile').textContent = notes ? notes.name : 'Choose a notes file…';
+  };
+
+  async function pickNotesFile() {
+    notes = await window.showSaveFilePicker({
+      suggestedName: handle.name.replace(/\.[^.]+$/, '') + '-notes.md',
+      startIn: 'documents',
+      types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md'] } }],
+    });
+    await put('notes', { doc: handle.name, handle: notes }).catch(() => {});
+    syncNoteFile();
+  }
+
+  // The notes file may have been picked in an earlier session, so the write
+  // permission has to be asked for again before the first note of this one.
+  async function ensureNotesFile() {
+    if (!notes) return pickNotesFile();
+    let perm = await notes.queryPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') perm = await notes.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') return pickNotesFile();
+  }
+
+  async function appendNote(entry) {
+    const file = await notes.getFile();
+    const head = file.size ? '' : '# Notes on ' + handle.name + '\n\n';
+    const w = await notes.createWritable({ keepExistingData: true });
+    await w.write({ type: 'write', position: file.size, data: head + entry });
+    await w.close();
+  }
+
+  async function saveNote() {
+    const body = noteText.value.trim();
+    const s = anchorSentence();
+    if (!body || !s) return;
+    try {
+      await ensureNotesFile();
+      const quoted = s.text.split('\n').map(l => '> ' + l).join('\n');
+      // The rule needs the blank line before it, or markdown reads it as a
+      // setext heading underlining the note instead of a break after it.
+      await appendNote('*' + locator(s) + '*\n\n' + quoted + '\n\n' + body + '\n\n---\n\n');
+      drafts.delete(units[idx].sentence);
+      noteText.value = '';
+      closeNote();
+      flashNote('noted');
+    } catch (e) {
+      // The note stays in the box, so nothing typed is lost.
+      if (e.name !== 'AbortError') flashNote('Could not write the note: ' + e.message);
+    }
+  }
+
+  $('notebtn').addEventListener('click', e => {
+    e.stopPropagation();
+    closePanels();
+    noteOpen() ? closeNote() : openNote();
+  });
+  $('notefile').addEventListener('click', () => pickNotesFile().catch(e => {
+    if (e.name !== 'AbortError') flashNote(e.message);
+  }));
+  noteText.addEventListener('input', () => { growNote(); fitText(); });
+  noteText.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); closeNote(); }
+    else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); saveNote(); }
+  });
+
+  // ---------- panels ----------
+  const panels = [
+    { btn: $('readbtn'), panel: $('readpanel') },
+    { btn: $('setbtn'), panel: $('setpanel') },
+    { btn: $('helpbtn'), panel: $('helppanel') },
+  ];
+  function closePanels(except) {
+    for (const p of panels) {
+      if (p === except) continue;
+      p.panel.classList.remove('open');
+      p.btn.classList.remove('open');
+    }
+  }
+  for (const p of panels) {
+    p.btn.addEventListener('click', e => {
+      e.stopPropagation();
+      closePanels(p);
+      const open = p.panel.classList.toggle('open');
+      p.btn.classList.toggle('open', open);
+      if (p.btn.id === 'setbtn' && open) syncAppearance();
+    });
+  }
+  document.addEventListener('click', e => {
+    for (const p of panels) {
+      if (!p.panel.contains(e.target) && e.target !== p.btn) {
+        p.panel.classList.remove('open');
+        p.btn.classList.remove('open');
+      }
+    }
+  });
+
+  // ---------- appearance ----------
+  // Ported from By Line, theme codes included, so a code copied from one app
+  // works in the other.
+  const APP_KEY = 'mud-appearance';
+  // The default theme, mirrored in :root. An unset slot means "use these".
+  const DEFAULT_BG = '#f6eddf', DEFAULT_FG = '#9b5c22';
+  let appearance = {};
+  try { appearance = JSON.parse(localStorage.getItem(APP_KEY)) || {}; } catch {}
+
+  const hexToHsl = hex => {
+    const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255);
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+    const l = (max + min) / 2;
+    if (!d) return [0, 0, l];
+    const h = max === r ? (g - b) / d + (g < b ? 6 : 0)
+            : max === g ? (b - r) / d + 2
+            :             (r - g) / d + 4;
+    return [h * 60, d / (1 - Math.abs(2 * l - 1)), l];
+  };
+  const hslToHex = (h, s, l) => {
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c / 2;
+    const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
+                    : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+    return '#' + [r, g, b].map(v => Math.round((v + m) * 255).toString(16).padStart(2, '0')).join('');
+  };
+  const chroma = (s, l) => s * (1 - Math.abs(2 * l - 1));
+  // The accent (headings, hovers) is pulled from the text colour: a coloured
+  // text gets an analogous hue 30° away, while near-neutral text has no hue
+  // worth turning, so the accent is the text colour itself. The 30° goes in
+  // whichever direction leads away from the background's hue, so the accent
+  // doesn't melt into the page. Lightness is then pushed until it separates.
+  const deriveAccent = (fg, bg) => {
+    let [h, s, l] = hexToHsl(fg);
+    const [hbg, sbg, lbg] = hexToHsl(bg);
+    // Judge hue by chroma, not HSL saturation: an off-white like #e8e4dc reads
+    // as neutral to the eye but scores 0.37 saturation.
+    if (chroma(s, l) >= 0.12) {
+      const toBg = ((hbg - h + 540) % 360) - 180;
+      const dir = chroma(sbg, lbg) >= 0.05 ? (toBg > 0 ? -1 : 1) : -1;
+      h = (h + dir * 30 + 360) % 360;
+      s = Math.max(s, 0.45);
+    }
+    if (Math.abs(l - lbg) < 0.28) {
+      l = lbg > 0.5 ? Math.max(0.2, lbg - 0.32) : Math.min(0.82, lbg + 0.32);
+    }
+    return hslToHex(h, s, l);
+  };
+
+  function applyAppearance() {
+    const st = document.documentElement.style;
+    appearance.font ? st.setProperty('--font', appearance.font) : st.removeProperty('--font');
+    appearance.size ? st.setProperty('--fsize', appearance.size + 'px') : st.removeProperty('--fsize');
+    // A half-set colour pair must not leave one colour on top of a background
+    // it can't be read against. If only one is set, the default theme supplies
+    // the other when the brightness works, otherwise a plain dark counterpart.
+    let bg = appearance.bg, fg = appearance.fg;
+    const isLight = hex =>
+      parseInt(hex.slice(1, 3), 16) * 0.299 +
+      parseInt(hex.slice(3, 5), 16) * 0.587 +
+      parseInt(hex.slice(5, 7), 16) * 0.114 > 128;
+    if (bg && !fg) fg = isLight(bg) ? DEFAULT_FG : '#e8e4dc';
+    if (fg && !bg) bg = isLight(fg) ? '#191817' : DEFAULT_BG;
+    bg ? st.setProperty('--bg', bg) : st.removeProperty('--bg');
+    fg ? st.setProperty('--fg', fg) : st.removeProperty('--fg');
+    if (appearance.bg || appearance.fg) {
+      st.setProperty('--muted', 'color-mix(in srgb, var(--fg) 55%, var(--bg))');
+      st.setProperty('--accent', deriveAccent(fg, bg));
+    } else {
+      st.removeProperty('--muted');
+      st.removeProperty('--accent');
+    }
+    if (units.length) fitText();
+  }
+
+  function saveAppearance() {
+    localStorage.setItem(APP_KEY, JSON.stringify(appearance));
+    applyAppearance();
+    const code = $('set-code');
+    if (document.activeElement !== code) {
+      code.value = themeCode();
+      code.classList.remove('invalid');
+    }
+  }
+
+  // ---------- theme codes ----------
+  // Format: font;size;bg;fg. Empty slots fall back to the default theme.
+  const themeCode = () => {
+    const c = [appearance.font || '', appearance.size || '',
+               appearance.bg || '', appearance.fg || ''].join(';');
+    return c === ';;;' ? '' : c;
+  };
+
+  function parseThemeCode(str) {
+    str = str.trim();
+    if (!str || str === 'default') return {};
+    const parts = str.split(';');
+    if (parts.length !== 4) return null;
+    const [font, size, bg, fg] = parts.map(p => p.trim());
+    const hex = /^#[0-9a-fA-F]{6}$/;
+    const out = {};
+    if (font) out.font = font;
+    if (size) {
+      if (!/^\d+$/.test(size)) return null;
+      const n = parseInt(size, 10);
+      if (n < 8 || n > 100) return null;
+      out.size = n;
+    }
+    if (bg) { if (!hex.test(bg)) return null; out.bg = bg; }
+    if (fg) { if (!hex.test(fg)) return null; out.fg = fg; }
+    return out;
+  }
+
+  const toHex = rgb => {
+    const m = rgb.match(/\d+/g);
+    if (!m) return '#000000';
+    return '#' + m.slice(0, 3).map(n => (+n).toString(16).padStart(2, '0')).join('');
+  };
+
+  function syncAppearance() {
+    $('set-font').value = appearance.font || '';
+    const size = appearance.size ||
+      Math.round(parseFloat(getComputedStyle(unitEl).fontSize));
+    $('set-size').value = size;
+    $('set-size-val').textContent = size + 'px';
+    const cs = getComputedStyle(document.body);
+    $('set-bg').value = appearance.bg || toHex(cs.backgroundColor);
+    $('set-fg').value = appearance.fg || toHex(cs.color);
+    const code = $('set-code');
+    if (document.activeElement !== code) {
+      code.value = themeCode();
+      code.classList.remove('invalid');
+    }
+  }
+
+  $('set-code').addEventListener('input', e => {
+    const parsed = parseThemeCode(e.target.value);
+    if (parsed !== null) {
+      e.target.classList.remove('invalid');
+      appearance = parsed;
+      localStorage.setItem(APP_KEY, JSON.stringify(appearance));
+      applyAppearance();
+      syncAppearance();
+    }
+  });
+  $('set-code').addEventListener('change', e => {
+    if (parseThemeCode(e.target.value) === null) {
+      e.target.classList.add('invalid');
+    } else {
+      e.target.classList.remove('invalid');
+      e.target.value = themeCode();
+    }
+  });
+  $('set-copy').addEventListener('click', async e => {
+    const btn = e.target;
+    try {
+      await navigator.clipboard.writeText(themeCode() || 'default');
+      btn.textContent = 'copied!';
+    } catch {
+      btn.textContent = 'failed';
+    }
+    setTimeout(() => { btn.textContent = 'copy'; }, 1200);
+  });
+
+  const fontInput = $('set-font');
+  fontInput.addEventListener('input', e => {
+    const v = e.target.value.trim();
+    if (v) appearance.font = v; else delete appearance.font;
+    saveAppearance();
+  });
+  // The datalist filters on whatever is in the box, so a filled box hides every
+  // other font. Empty it while the field is focused (the current font moves to
+  // the placeholder) and put it back on the way out.
+  const emptyForList = () => {
+    if (!fontInput.value) return;
+    fontInput.placeholder = fontInput.value;
+    fontInput.value = '';
+  };
+  fontInput.addEventListener('mousedown', emptyForList);
+  fontInput.addEventListener('focus', emptyForList);
+  fontInput.addEventListener('blur', () => {
+    if (!fontInput.value) fontInput.value = appearance.font || '';
+    fontInput.placeholder = 'Charter';
+  });
+  $('set-size').addEventListener('input', e => {
+    appearance.size = +e.target.value;
+    $('set-size-val').textContent = appearance.size + 'px';
+    saveAppearance();
+  });
+  $('set-bg').addEventListener('input', e => { appearance.bg = e.target.value; saveAppearance(); });
+  $('set-fg').addEventListener('input', e => { appearance.fg = e.target.value; saveAppearance(); });
+  $('set-reset').addEventListener('click', () => {
+    appearance = {};
+    localStorage.removeItem(APP_KEY);
+    applyAppearance();
+    syncAppearance();
+  });
+
+  applyAppearance();
+
+  // ---------- controls ----------
+  function syncControls() {
+    $('set-view').value = settings.viewport;
+    $('set-jump').value = settings.jumpMode;
+    $('set-jumpn').value = settings.jumpWords;
+    $('set-jumpn').hidden = settings.jumpMode !== 'words';
+    $('markbtn').classList.toggle('on', settings.bookmark);
+    $('markbtn').innerHTML = settings.bookmark ? '&#9679;' : '&#9675;';
+  }
+
+  $('set-view').addEventListener('change', e => {
+    settings.viewport = e.target.value;
+    saveSettings();
+    setViewport(settings.viewport);
+  });
+  $('set-jump').addEventListener('change', e => {
+    settings.jumpMode = e.target.value;
+    saveSettings();
+    syncControls();
+  });
+  $('set-jumpn').addEventListener('change', e => {
+    const n = parseInt(e.target.value, 10);
+    settings.jumpWords = Number.isFinite(n) ? Math.min(5000, Math.max(10, n)) : defaults.jumpWords;
+    saveSettings();
+    syncControls();
+  });
+  $('markbtn').addEventListener('click', () => {
+    settings.bookmark = !settings.bookmark;
+    saveSettings();
+    syncControls();
+    if (settings.bookmark) saveMark();
+    else {
+      const marks = readMarks();
+      if (handle) delete marks[handle.name];
+      localStorage.setItem(MARK_KEY, JSON.stringify(marks));
+    }
+  });
+
+  // ---------- opening ----------
+  async function begin() {
+    const text = await (await handle.getFile()).text();
+    sentences = buildSpine(parseBlocks(text));
+    if (!sentences.length) {
+      $('starterr').textContent = 'That file has nothing to read in it.';
+      return;
+    }
+    const stored = await get('notes').catch(() => null);
+    notes = stored && stored.doc === handle.name ? stored.handle : null;
+    syncNoteFile();
+    const mark = settings.bookmark ? (readMarks()[handle.name] || 0) : 0;
+    $('start').style.display = 'none';
+    $('reader').classList.add('active');
+    $('filename').textContent = handle.name;
+    setViewport(settings.viewport, Math.min(mark, sentences.length - 1));
+  }
+
+  $('btn-open').addEventListener('click', async () => {
+    $('starterr').textContent = '';
+    try {
+      const [picked] = await window.showOpenFilePicker({
+        startIn: 'documents',
+        types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md', '.markdown'] } }],
+      });
+      handle = picked;
+      await put('doc', handle).catch(() => {});
+      await begin();
+    } catch (e) {
+      if (e.name !== 'AbortError') $('starterr').textContent = e.message;
+    }
+  });
+
+  $('btn-continue').addEventListener('click', async () => {
+    $('starterr').textContent = '';
+    try {
+      let perm = await handle.queryPermission({ mode: 'read' });
+      if (perm !== 'granted') perm = await handle.requestPermission({ mode: 'read' });
+      if (perm === 'granted') await begin();
+      else $('starterr').textContent = 'Permission denied. Open the file again below.';
+    } catch {
+      $('starterr').textContent = 'Could not reopen that file. Open it again below.';
+    }
+  });
+
+  (async () => {
+    if (!window.showOpenFilePicker) {
+      $('btn-open').style.display = 'none';
+      $('starterr').textContent =
+        'This browser cannot open files this way. Please use Chrome or Edge.';
+      return;
+    }
+    try {
+      const stored = await get('doc');
+      if (stored) {
+        handle = stored;
+        const b = $('btn-continue');
+        b.textContent = 'Continue “' + stored.name + '”';
+        b.style.display = '';
+      }
+    } catch {}
+  })();
+
+  syncControls();
+})();
+</script>
+</body>
+</html>
