@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>mark up down</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#f6eddf">
 <style>
   /* Default theme, shared with By Line: the theme code Charter;30;#f6eddf;#9b5c22.
@@ -67,6 +70,14 @@
     cursor: pointer;
   }
   #start button:hover { border-color: var(--accent); color: var(--accent); }
+  #start #btn-install {
+    border: none;
+    padding: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: underline;
+  }
+  #start #btn-install:hover { color: var(--accent); }
   #start .error { color: var(--accent); font-size: 0.9rem; max-width: 30rem; line-height: 1.4; }
 
   /* ---- reading screen ---- */
@@ -336,6 +347,7 @@
   </div>
   <button id="btn-continue" style="display:none"></button>
   <button id="btn-open">Open a document&hellip;</button>
+  <button id="btn-install" style="display:none">Install mark up down as an app&hellip;</button>
   <p class="error" id="starterr"></p>
 </div>
 
@@ -430,6 +442,7 @@
     <p><kbd>&darr;</kbd> and <kbd>&uarr;</kbd> jump, by paragraph or by a set number of words.</p>
     <p>The bookmark keeps your place. Switch it off and the document always opens at the top.</p>
     <p>The pencil, or <kbd>Enter</kbd>, opens a note on the sentence you're reading. Notes append to a markdown file of your choosing, in the order you write them.</p>
+    <p id="help-install"></p>
   </div>
 </div>
 
@@ -1241,6 +1254,46 @@
   })();
 
   syncControls();
+
+  // ---------- install ----------
+  // Chrome offers the install prompt only while the page is installable and
+  // not yet installed, so the start-screen button comes and goes on its own.
+  // The line in the keys panel is permanent: with no prompt on offer it falls
+  // back to directions for the browser menu.
+  let installPrompt = null;
+  function syncInstall() {
+    $('btn-install').style.display = installPrompt ? '' : 'none';
+    $('help-install').innerHTML = installPrompt
+      ? 'You can <a href="#">install mark up down as an app</a> on your computer.'
+      : 'To install mark up down as an app on your computer, open Chrome’s ⋮ menu and choose Cast, save and share, then Install page as app.';
+  }
+  function promptInstall() {
+    const p = installPrompt;
+    if (!p) return;
+    installPrompt = null;
+    syncInstall();
+    p.prompt();
+  }
+  $('btn-install').addEventListener('click', promptInstall);
+  $('help-install').addEventListener('click', e => {
+    if (e.target.tagName === 'A') { e.preventDefault(); promptInstall(); }
+  });
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    installPrompt = e;
+    syncInstall();
+  });
+  window.addEventListener('appinstalled', () => { installPrompt = null; syncInstall(); });
+  syncInstall();
+
+  // An unsaved note must not vanish with the tab.
+  window.addEventListener('beforeunload', e => {
+    if (noteText.value.trim() || drafts.size) { e.preventDefault(); e.returnValue = ''; }
+  });
+
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 })();
 </script>
 </body>
