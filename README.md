@@ -1,8 +1,10 @@
 # mark up down
 
 Read a markdown manuscript one sentence at a time, and note what needs
-changing as you go. A reading companion to [By Line](https://github.com/daebhid/byline),
+changing as you go. A reading companion to [By Line](https://github.com/daebhid/by-line),
 which writes one sentence at a time.
+
+**Use it:** https://daebhid.github.io/mark-up-down/
 
 Your document is opened **read-only**. The app holds no permission to write to
 it and never touches it. Notes go to a separate markdown file you choose.
