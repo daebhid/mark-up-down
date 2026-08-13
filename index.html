@@ -347,7 +347,8 @@
   </div>
   <button id="btn-continue" style="display:none"></button>
   <button id="btn-open">Open a document&hellip;</button>
-  <button id="btn-install" style="display:none">Install mark up down as an app&hellip;</button>
+  <button id="btn-install">Install mark up down as an app&hellip;</button>
+  <p class="sub" id="install-hint"></p>
   <p class="error" id="starterr"></p>
 </div>
 
@@ -1256,20 +1257,30 @@
   syncControls();
 
   // ---------- install ----------
-  // Chrome offers the install prompt only while the page is installable and
-  // not yet installed, so the start-screen button comes and goes on its own.
-  // The line in the keys panel is permanent: with no prompt on offer it falls
-  // back to directions for the browser menu.
-  let installPrompt = null;
+  // Chrome only offers its install prompt once it has decided the page is
+  // installable, which takes a visit or two while the service worker settles.
+  // Hiding the button until then leaves no way in, so it is always shown: with
+  // a prompt on offer it installs, and without one it spells out the menu
+  // route instead. The button disappears only once the app is installed.
+  const HOW_TO_INSTALL =
+    'Chrome hasn’t offered to install it yet. Open Chrome’s ⋮ menu, ' +
+    'choose Cast, save and share, then Install page as app. ' +
+    'Reloading this page once usually makes the button work.';
+  let installPrompt = null, installed = false;
   function syncInstall() {
-    $('btn-install').style.display = installPrompt ? '' : 'none';
+    $('btn-install').style.display = installed ? 'none' : '';
+    $('install-hint').style.display = 'none';
     $('help-install').innerHTML = installPrompt
       ? 'You can <a href="#">install mark up down as an app</a> on your computer.'
       : 'To install mark up down as an app on your computer, open Chrome’s ⋮ menu and choose Cast, save and share, then Install page as app.';
   }
   function promptInstall() {
     const p = installPrompt;
-    if (!p) return;
+    if (!p) { // no prompt on offer, so say how to do it by hand
+      $('install-hint').textContent = HOW_TO_INSTALL;
+      $('install-hint').style.display = '';
+      return;
+    }
     installPrompt = null;
     syncInstall();
     p.prompt();
@@ -1283,7 +1294,11 @@
     installPrompt = e;
     syncInstall();
   });
-  window.addEventListener('appinstalled', () => { installPrompt = null; syncInstall(); });
+  window.addEventListener('appinstalled', () => {
+    installPrompt = null;
+    installed = true;
+    syncInstall();
+  });
   syncInstall();
 
   // An unsaved note must not vanish with the tab.
