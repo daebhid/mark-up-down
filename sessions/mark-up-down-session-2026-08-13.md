@@ -203,14 +203,49 @@ Two bugs the tests caught and fixed:
 Not verified: the file pickers, rendering and fit-to-screen need a real browser
 and a real document — the File System Access API can't be driven headlessly.
 
+**Finishing — installable, offline, documented.**
+
+- `manifest.webmanifest`, `sw.js` (network-first, same strategy as By Line),
+  `README.md`, and install-prompt wiring with the permanent fallback line in the
+  keys panel.
+- Icons generated, not borrowed: a Node script draws the wordmark's paired
+  arrows in the default theme's colours, supersampled for smooth diagonals, and
+  encodes the PNG through `zlib` with a hand-written container. Inside the 80%
+  maskable safe zone. Script kept in the session scratchpad.
+- An unsaved note now warns before the tab closes.
+
+## Repository
+
+`https://github.com/daebhid/mark-up-down` — **private**, branch `main`.
+
+Two commits. `.gitignore` covers `.DS_Store` and `.claude/settings.local.json`
+(note that `byline` has `.DS_Store` committed to it; this repo doesn't).
+
+Git has no credential helper configured in this environment — `gh` holds the
+token. Pushing needs
+`git -c credential.helper='!gh auth git-credential' push`, or a one-time
+`gh auth setup-git`, which was not run because it changes global git config.
+
+## What persists
+
+| What | Where |
+|---|---|
+| Document and notes file handles | IndexedDB (`markupdown` / `kv`) |
+| Reading position, per document | localStorage `mud-bookmarks` |
+| Viewport, jump mode, jump words, bookmark on/off | localStorage `mud-settings` |
+| Font, size, background, text colour | localStorage `mud-appearance` |
+| The app itself, for offline use | Cache Storage `markupdown-v1` |
+
 ## Next steps
 
-All three build steps are done.
+All build steps are done and the app is finished to By Line's standard.
 
 1. David to open it in Chrome with a real manuscript and report. Two things
    expected to want adjusting: the fit-to-screen floor in paragraph view, and
    how prominent the status line should be while reading.
-2. Not built, not yet agreed: `manifest.webmanifest`, icons, `sw.js`, README,
-   git repo.
+2. **Installing it needs the app served over https.** GitHub Pages doesn't serve
+   private repositories on a free plan, so the repo has to go public for the
+   By Line arrangement to work. David's call — it's private at his request.
 3. Tip jar still points at `ko-fi.com/byline`.
-4. `byline` vs `by-line` — which repo is live, still unresolved.
+4. `byline` vs `by-line` — both exist on GitHub; `byline` is the one the README
+   links to as live. Which is canonical still unconfirmed.
